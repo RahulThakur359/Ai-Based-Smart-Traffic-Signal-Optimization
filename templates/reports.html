@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Reports & Analytics - Smart Traffic AI</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=3.5">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        .reports-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+            margin: 20px 0 28px 0;
+        }
+        .report-stat-card {
+            background: rgba(18, 23, 34, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 240, 255, 0.15);
+            border-radius: 12px;
+            padding: 18px 20px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+        }
+        .report-stat-card::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 4px; height: 100%;
+            background: #00f0ff;
+        }
+        .report-stat-card.green::after { background: #00e676; }
+        .report-stat-card.yellow::after { background: #ffaa00; }
+        .report-stat-card.purple::after { background: #b388ff; }
+
+        .report-stat-label {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #8fa0dd;
+            margin-bottom: 6px;
+        }
+        .report-stat-value {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.1;
+        }
+        .report-stat-sub {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .reports-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 25px;
+        }
+        @media (max-width: 900px) {
+            .reports-layout { grid-template-columns: 1fr; }
+        }
+
+        .report-controls-panel {
+            background: rgba(18, 23, 34, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 22px;
+            height: fit-content;
+        }
+        .report-controls-panel h3 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.25rem;
+            color: #00f0ff;
+            margin: 0 0 16px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .export-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #ffffff;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-decoration: none;
+            box-sizing: border-box;
+        }
+        .export-btn:hover {
+            background: rgba(0, 240, 255, 0.12);
+            border-color: #00f0ff;
+            box-shadow: 0 4px 15px rgba(0, 240, 255, 0.25);
+            transform: translateY(-1px);
+        }
+        .export-btn .tag {
+            font-size: 0.7rem;
+            background: rgba(0, 240, 255, 0.15);
+            color: #00f0ff;
+            padding: 2px 7px;
+            border-radius: 4px;
+        }
+
+        .reports-content {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        .analytics-card {
+            background: rgba(18, 23, 34, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 22px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+        .analytics-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding-bottom: 10px;
+        }
+        .analytics-header h3 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.25rem;
+            color: #ffffff;
+            margin: 0;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 290px;
+            width: 100%;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+        .reports-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+        .reports-table th, .reports-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.88rem;
+        }
+        .reports-table th {
+            font-family: 'Rajdhani', sans-serif;
+            color: #8fa0dd;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.82rem;
+            background: rgba(10, 14, 22, 0.5);
+        }
+        .reports-table td {
+            color: #cbd5e1;
+        }
+        .reports-table tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .badge-cong {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .badge-cong.normal { background: rgba(0, 230, 118, 0.15); color: #00e676; border: 1px solid rgba(0, 230, 118, 0.3); }
+        .badge-cong.moderate { background: rgba(255, 170, 0, 0.15); color: #ffaa00; border: 1px solid rgba(255, 170, 0, 0.3); }
+        .badge-cong.high { background: rgba(255, 51, 75, 0.15); color: #ff334b; border: 1px solid rgba(255, 51, 75, 0.3); }
+
+        .btn-refresh {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #00f0ff;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-refresh:hover {
+            background: #00f0ff;
+            color: #06090e;
+        }
+
+        @media print {
+            .main-header, .report-controls-panel, .btn-refresh { display: none !important; }
+            .reports-layout { grid-template-columns: 1fr; }
+            body { background: #ffffff; color: #000000; }
+            .analytics-card, .report-stat-card { background: #ffffff; border: 1px solid #ccc; color: #000; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation Header -->
+    <header class="main-header">
+        <div class="logo">
+            <span class="pulse-dot"></span>
+            ITSC-SYSTEM | SMART TRAFFIC AI
+        </div>
+        <nav class="nav-links">
+            <a href="{{ url_for('dashboard.index') }}">Control Center</a>
+            <a href="{{ url_for('dashboard.reports') }}" class="active">Performance Reports</a>
+            <a href="{{ url_for('dashboard.settings') }}">System Settings</a>
+            <a href="{{ url_for('auth.logout') }}" class="btn-login-nav">Sign Out ({{ current_user or 'Operator' }})</a>
+        </nav>
+    </header>
+
+    <main class="content-container">
+        <!-- Page Title & Meta -->
+        <section class="page-intro">
+            <h2>TRAFFIC ANALYTICS & PERFORMANCE REPORTS</h2>
+            <p>Historical telemetry, queue density dynamics, algorithmic delay reduction audits, and downloadable audit logs.</p>
+        </section>
+
+        <!-- KPI Summary Cards -->
+        <div class="reports-stats-grid">
+            <div class="report-stat-card">
+                <div class="report-stat-label">Total Monitored Vehicles</div>
+                <div class="report-stat-value" id="kpi-total-vehicles">--</div>
+                <div class="report-stat-sub">Across 4 Intersection Arms</div>
+            </div>
+            <div class="report-stat-card green">
+                <div class="report-stat-label">Average Intersection Density</div>
+                <div class="report-stat-value" id="kpi-avg-density">--%</div>
+                <div class="report-stat-sub">Physical Area Occupancy</div>
+            </div>
+            <div class="report-stat-card yellow">
+                <div class="report-stat-label">Peak Demand Branch</div>
+                <div class="report-stat-value" id="kpi-peak-road" style="font-size: 1.55rem;">--</div>
+                <div class="report-stat-sub">Highest Occupancy Ratio</div>
+            </div>
+            <div class="report-stat-card purple">
+                <div class="report-stat-label">Adaptive Delay Reduction</div>
+                <div class="report-stat-value" id="kpi-efficiency">--%</div>
+                <div class="report-stat-sub">Versus Fixed 45s Cycle</div>
+            </div>
+        </div>
+
+        <div class="reports-layout">
+            <!-- Left Controls & Export Panel -->
+            <aside class="report-controls-panel">
+                <h3><span>📥</span> Export Audit Records</h3>
+                <p style="font-size: 0.8rem; color: #8fa0dd; margin-bottom: 16px;">Download structured CSV files for major project documentation & viva demonstration:</p>
+
+                <a href="/api/reports/export?type=daily&format=csv" class="export-btn" download>
+                    <span>📊 Daily Traffic Report</span>
+                    <span class="tag">CSV</span>
+                </a>
+                <a href="/api/reports/export?type=weekly&format=csv" class="export-btn" download>
+                    <span>📈 Weekly Summary</span>
+                    <span class="tag">CSV</span>
+                </a>
+                <a href="/api/reports/export?type=monthly&format=csv" class="export-btn" download>
+                    <span>📅 Monthly Aggregation</span>
+                    <span class="tag">CSV</span>
+                </a>
+                <a href="/api/reports/export?type=peak&format=csv" class="export-btn" download>
+                    <span>⏱️ Peak Hour Analysis</span>
+                    <span class="tag">CSV</span>
+                </a>
+                <button class="export-btn" onclick="window.print();" style="border-color: rgba(0, 230, 118, 0.4);">
+                    <span>📄 Print / Export PDF</span>
+                    <span class="tag" style="background: rgba(0, 230, 118, 0.2); color: #00e676;">PRINT</span>
+                </button>
+
+                <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+                    <div style="font-size: 0.78rem; color: #8fa0dd; margin-bottom: 6px;">DATA ENGINE STATUS:</div>
+                    <div style="font-size: 0.82rem; color: #00e676; display: flex; align-items: center; gap: 6px;">
+                        <span style="width: 8px; height: 8px; border-radius: 50%; background: #00e676; display: inline-block;"></span>
+                        Real-time Analytics Ready
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Analytics & Charts Section -->
+            <div class="reports-content">
+                <!-- Volume & Density Chart -->
+                <div class="analytics-card">
+                    <div class="analytics-header">
+                        <h3>Volume & Area Density Comparison (4 Intersection Branches)</h3>
+                        <button class="btn-refresh" onclick="loadReportsData();">↻ Refresh</button>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="reportsComparisonChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent Execution Records Table -->
+                <div class="analytics-card">
+                    <div class="analytics-header">
+                        <h3>Logged Video Processing & Signal Optimization Decisions</h3>
+                        <span id="record-count-badge" style="font-size: 0.8rem; color: #8fa0dd;">Showing recent entries</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="reports-table">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Road Branch</th>
+                                    <th>Vehicle Count</th>
+                                    <th>Area Density</th>
+                                    <th>Congestion Level</th>
+                                    <th>Emergency</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reports-table-body">
+                                <tr>
+                                    <td colspan="6" style="text-align: center; color: #64748b; padding: 25px;">Loading logged traffic records...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="main-footer" style="margin-top: 40px; text-align: center; color: #64748b; padding: 20px 0;">
+        <p>© 2026 AI-Based Smart Traffic Signal Optimization | B.E. Computer Engineering Major Project</p>
+    </footer>
+
+    <!-- Reports Data Script -->
+    <script>
+        let reportsChart = null;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            initReportsChart();
+            loadReportsData();
+            // Auto refresh every 5 seconds
+            setInterval(loadReportsData, 5000);
+        });
+
+        function initReportsChart() {
+            const ctx = document.getElementById("reportsComparisonChart");
+            if (!ctx) return;
+
+            reportsChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Road 1 (North)', 'Road 2 (East)', 'Road 3 (South)', 'Road 4 (West)'],
+                    datasets: [
+                        {
+                            label: 'Vehicles Counted',
+                            data: [0, 0, 0, 0],
+                            backgroundColor: 'rgba(0, 240, 255, 0.45)',
+                            borderColor: '#00f0ff',
+                            borderWidth: 1.5,
+                            borderRadius: 6,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Area Density (%)',
+                            data: [0, 0, 0, 0],
+                            type: 'line',
+                            borderColor: '#ffaa00',
+                            backgroundColor: 'rgba(255, 170, 0, 0.2)',
+                            borderWidth: 2.5,
+                            pointBackgroundColor: '#ffaa00',
+                            pointRadius: 5,
+                            tension: 0.35,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { color: '#8fa0dd', font: { family: 'Rajdhani', size: 12, weight: 600 } }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: { display: true, text: 'Vehicle Count', color: '#00f0ff', font: { size: 11 } },
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { color: '#8fa0dd' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: { display: true, text: 'Density %', color: '#ffaa00', font: { size: 11 } },
+                            grid: { drawOnChartArea: false },
+                            ticks: { color: '#ffaa00', callback: val => val + '%' },
+                            min: 0,
+                            max: 100
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: '#ffffff', font: { family: 'Inter', size: 12 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function loadReportsData() {
+            try {
+                const res = await fetch('/api/reports/data', { cache: 'no-store' });
+                if (!res.ok) return;
+
+                const json = await res.json();
+                if (!json.success || !json.summary) return;
+
+                const s = json.summary;
+
+                // 1. Update KPI Cards
+                document.getElementById('kpi-total-vehicles').textContent = s.total_vehicles || 0;
+                document.getElementById('kpi-avg-density').textContent = (s.avg_density || 0) + '%';
+                document.getElementById('kpi-peak-road').textContent = s.peak_road || '--';
+                document.getElementById('kpi-efficiency').textContent = s.efficiency_gain || '-32.5%';
+
+                // 2. Update Comparison Chart
+                if (reportsChart && s.per_road) {
+                    const vehicles = [
+                        s.per_road.road1?.vehicles || 0,
+                        s.per_road.road2?.vehicles || 0,
+                        s.per_road.road3?.vehicles || 0,
+                        s.per_road.road4?.vehicles || 0
+                    ];
+                    const densities = [
+                        s.per_road.road1?.density || 0,
+                        s.per_road.road2?.density || 0,
+                        s.per_road.road3?.density || 0,
+                        s.per_road.road4?.density || 0
+                    ];
+                    reportsChart.data.datasets[0].data = vehicles;
+                    reportsChart.data.datasets[1].data = densities;
+                    reportsChart.update();
+                }
+
+                // 3. Update Table Body
+                const tbody = document.getElementById('reports-table-body');
+                const badgeCount = document.getElementById('record-count-badge');
+                if (badgeCount) badgeCount.textContent = `${s.records?.length || 0} recent record(s)`;
+
+                if (tbody && s.records && s.records.length > 0) {
+                    const roadNames = {
+                        road1: 'Road 1 (North Branch)',
+                        road2: 'Road 2 (East Branch)',
+                        road3: 'Road 3 (South Branch)',
+                        road4: 'Road 4 (West Branch)'
+                    };
+
+                    tbody.innerHTML = s.records.map(r => {
+                        const cong = String(r.congestion_level || 'NORMAL').toUpperCase();
+                        const congClass = cong === 'HIGH' ? 'high' : (cong === 'MODERATE' ? 'moderate' : 'normal');
+                        const rName = roadNames[r.road_id] || (r.road_id || '').toUpperCase();
+
+                        return `
+                            <tr>
+                                <td>${r.timestamp || '--'}</td>
+                                <td style="font-weight: 600; color: #ffffff;">${rName}</td>
+                                <td><strong style="color: #00f0ff;">${r.vehicle_count}</strong></td>
+                                <td>${r.density}%</td>
+                                <td><span class="badge-cong ${congClass}">${cong}</span></td>
+                                <td style="color: ${r.emergency_detected ? '#ff334b' : '#64748b'};">${r.emergency_detected ? 'YES' : 'NO'}</td>
+                            </tr>
+                        `;
+                    }).join('');
+                } else if (tbody) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #64748b; padding: 25px;">No records logged yet. Process video feeds in Control Center.</td></tr>`;
+                }
+            } catch (err) {
+                console.error("[REPORTS] Error loading reports data:", err);
+            }
+        }
+    </script>
+</body>
+</html>

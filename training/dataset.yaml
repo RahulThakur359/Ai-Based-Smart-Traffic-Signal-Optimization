@@ -1,0 +1,18 @@
+# YOLOv8 custom traffic dataset configuration template
+# Set paths to point to labels and images folders relative to target dataset dir
+
+path: ../data/datasets/traffic  # Dataset root directory relative to training scripts
+train: images/train              # Train images directory
+val: images/val                  # Validation images directory
+test: images/test                # Test images directory (optional)
+
+# Number of classes
+nc: 5
+
+# Class names
+names:
+  0: car
+  1: truck
+  2: bus
+  3: motorcycle
+  4: ambulance

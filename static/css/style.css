@@ -1,0 +1,172 @@
+/* 
+   AI Traffic Optimization Design System CSS
+   Uses high-end Dark Mode cyber-slate colors with glassmorphic cards
+*/
+
+:root {
+    --bg-dark: #0a0d16;
+    --bg-deep: #05070c;
+    --card-bg: rgba(22, 28, 43, 0.7);
+    --border-light: rgba(255, 255, 255, 0.06);
+    --border-hover: rgba(255, 255, 255, 0.12);
+    
+    --primary: #0072ff;
+    --primary-glow: rgba(0, 114, 255, 0.3);
+    --cyan: #00f0ff;
+    --cyan-glow: rgba(0, 240, 255, 0.25);
+    
+    --text-main: #f0f4fc;
+    --text-muted: #8fa0dd;
+    --text-dim: #5c6a95;
+
+    /* Traffic signal variables */
+    --light-red-active: #ff334b;
+    --light-red-dim: #3a161b;
+    --light-yellow-active: #ffb800;
+    --light-yellow-dim: #3a2e16;
+    --light-green-active: #00e676;
+    --light-green-dim: #163a23;
+    
+    --font-main: 'Inter', sans-serif;
+    --font-cyber: 'Rajdhani', sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: var(--font-main);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Glassmorphic Navigation Header */
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 40px;
+    background: rgba(10, 13, 22, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-light);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.main-header .logo {
+    font-family: var(--font-cyber);
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, var(--cyan) 0%, var(--primary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pulse-dot {
+    width: 10px;
+    height: 10px;
+    background-color: var(--cyan);
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 10px var(--cyan);
+    animation: glowPulse 2s infinite;
+}
+
+@keyframes glowPulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 240, 255, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(0, 240, 255, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 240, 255, 0); }
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: var(--text-muted);
+    font-family: var(--font-cyber);
+    font-weight: 600;
+    font-size: 1.05rem;
+    letter-spacing: 0.5px;
+    transition: all 0.3s;
+    padding: 6px 12px;
+    border-radius: 4px;
+}
+
+.nav-links a:hover, .nav-links a.active {
+    color: #ffffff;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+}
+
+.nav-links a.active {
+    border-bottom: 2px solid var(--cyan);
+    border-radius: 0;
+}
+
+.btn-login-nav {
+    background: rgba(255, 51, 75, 0.1);
+    border: 1px solid rgba(255, 51, 75, 0.3) !important;
+    color: #ff334b !important;
+    border-radius: 6px !important;
+}
+
+.btn-login-nav:hover {
+    background: #ff334b !important;
+    color: #ffffff !important;
+    text-shadow: none !important;
+    box-shadow: 0 4px 10px rgba(255, 51, 75, 0.3);
+}
+
+/* Page Content Frame */
+.content-container {
+    flex: 1;
+    padding: 30px 40px;
+    max-width: 1600px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.page-intro {
+    margin-bottom: 25px;
+}
+
+.page-intro h2 {
+    font-family: var(--font-cyber);
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #ffffff;
+    margin-bottom: 5px;
+}
+
+.page-intro p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+/* Footers styling */
+.main-footer {
+    padding: 20px 40px;
+    background-color: var(--bg-deep);
+    border-top: 1px solid var(--border-light);
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+}

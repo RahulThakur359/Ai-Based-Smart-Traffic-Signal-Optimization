@@ -1,0 +1,65 @@
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual Environment
+venv/
+ENV/
+env/
+.env
+
+# Model weights (large files)
+models/*.pt
+models/*.onnx
+models/*.engine
+
+# Uploads and Outputs (ignore dynamic media files but keep directories)
+uploads/road1/*
+uploads/road2/*
+uploads/road3/*
+uploads/road4/*
+!uploads/road1/.gitkeep
+!uploads/road2/.gitkeep
+!uploads/road3/.gitkeep
+!uploads/road4/.gitkeep
+
+outputs/road1/*
+outputs/road2/*
+outputs/road3/*
+outputs/road4/*
+!outputs/road1/.gitkeep
+!outputs/road2/.gitkeep
+!outputs/road3/.gitkeep
+!outputs/road4/.gitkeep
+
+# Data folders
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+data/datasets/traffic/*
+!data/datasets/traffic/.gitkeep
+data/annotations/*
+!data/annotations/.gitkeep
+
+# Run logs & weights
+runs/
+.pt
+
+# Reports
+reports/daily/*
+reports/weekly/*
+reports/monthly/*
+!reports/daily/.gitkeep
+!reports/weekly/.gitkeep
+!reports/monthly/.gitkeep
+
+# IDE Configs
+.vscode/
+.idea/
+.DS_Store

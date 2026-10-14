@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - AI Traffic Control Center</title>
+    <!-- Google Fonts: Inter and Rajdhani -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: radial-gradient(circle at center, #1b2438 0%, #090c13 100%);
+            margin: 0;
+            padding: 20px 0;
+            font-family: 'Inter', sans-serif;
+            color: #ffffff;
+            box-sizing: border-box;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 440px;
+            padding: 40px;
+            background: rgba(18, 24, 38, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 16px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 35px rgba(0, 240, 255, 0.08);
+            text-align: center;
+            animation: fadeIn 0.7s ease-out;
+            box-sizing: border-box;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .auth-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: #00f0ff;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .login-logo {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 2.3rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #00f0ff 0%, #0072ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 4px;
+        }
+
+        .login-subtitle {
+            font-size: 0.85rem;
+            color: #8fa0dd;
+            margin-bottom: 24px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Flash & Error Alert Boxes */
+        .alert-box {
+            border-radius: 8px;
+            padding: 12px 15px;
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+            text-align: left;
+            line-height: 1.45;
+        }
+
+        .alert-error {
+            background: rgba(255, 51, 75, 0.15);
+            border: 1px solid rgba(255, 51, 75, 0.45);
+            color: #ff6b7d;
+        }
+
+        .alert-success {
+            background: rgba(0, 230, 118, 0.15);
+            border: 1px solid rgba(0, 230, 118, 0.45);
+            color: #00e676;
+        }
+
+        .alert-info {
+            background: rgba(0, 240, 255, 0.15);
+            border: 1px solid rgba(0, 240, 255, 0.45);
+            color: #00f0ff;
+        }
+
+        .access-policy-note {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 0.78rem;
+            color: #94a3b8;
+            text-align: left;
+            margin-bottom: 22px;
+            line-height: 1.4;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #a4b3e6;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 14px;
+            background: rgba(10, 14, 26, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #00f0ff;
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.25);
+            background: rgba(10, 14, 26, 0.9);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #0072ff 0%, #00a2ff 100%);
+            border: none;
+            border-radius: 8px;
+            color: #ffffff;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 114, 255, 0.4);
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            text-transform: uppercase;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 162, 255, 0.5);
+            background: linear-gradient(135deg, #00a2ff 0%, #00f0ff 100%);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .switch-link {
+            margin-top: 22px;
+            font-size: 0.85rem;
+            color: #8fa0dd;
+        }
+
+        .switch-link a {
+            color: #00f0ff;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .switch-link a:hover {
+            text-decoration: underline;
+            color: #5ce1e6;
+        }
+
+        .demo-credentials-badge {
+            margin-top: 18px;
+            padding: 8px 12px;
+            background: rgba(0, 240, 255, 0.05);
+            border: 1px solid rgba(0, 240, 255, 0.15);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        .demo-credentials-badge code {
+            color: #00f0ff;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+
+        .footer-text {
+            margin-top: 25px;
+            font-size: 0.75rem;
+            color: #5d6b8b;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="auth-badge">
+            <span style="font-size: 0.9rem;">🔒</span> Secure Portal
+        </div>
+        <div class="login-logo">ITSC-SYSTEM</div>
+        <div class="login-subtitle">AI Traffic Control Center Authorization</div>
+
+        <!-- Access Policy Notice -->
+        <div class="access-policy-note">
+            🛡️ <strong>Access Restricted:</strong> Only verified operators whose access has been granted through the dashboard can sign in.
+        </div>
+
+        <!-- Flashed Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert-box alert-{{ category if category != 'message' else 'info' }}">
+                  {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        {% if error %}
+        <div class="alert-box alert-error">
+            <strong>Authentication Error:</strong> {{ error }}
+        </div>
+        {% endif %}
+
+        {% if info %}
+        <div class="alert-box alert-info">
+            {{ info }}
+        </div>
+        {% endif %}
+
+        <form action="{{ url_for('auth.login') }}" method="POST">
+            <div class="form-group">
+                <label for="username">Operator Username</label>
+                <input type="text" id="username" name="username" placeholder="Enter operator ID" required autocomplete="username" autofocus>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Security Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter security key" required autocomplete="current-password">
+            </div>
+            
+            <button type="submit" class="login-btn">Authorize Connection</button>
+        </form>
+
+        <div class="switch-link">
+            Need an account? <a href="{{ url_for('auth.signup') }}">Request Access / Sign Up</a>
+        </div>
+
+        <div class="demo-credentials-badge">
+            Master Admin: <code>admin</code> / <code>admin123</code>
+        </div>
+        
+        <div class="footer-text">
+            B.E. Computer Engineering Major Project
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Settings - AI Traffic Control Center</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=3.5">
+    <style>
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 25px;
+            margin-top: 25px;
+        }
+        .form-section {
+            background: rgba(18, 23, 34, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .form-section h3 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.35rem;
+            color: #00f0ff;
+            margin: 0 0 18px 0;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .form-row {
+            margin-bottom: 14px;
+        }
+        .form-row label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 0.8rem;
+            color: #8fa0dd;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .form-row .desc {
+            font-size: 0.72rem;
+            color: #64748b;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+        .form-row input, .form-row select {
+            width: 100%;
+            padding: 11px 14px;
+            background: rgba(10, 14, 22, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+            box-sizing: border-box;
+            transition: all 0.25s ease;
+        }
+        .form-row input:focus, .form-row select:focus {
+            outline: none;
+            border-color: #00f0ff;
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.25);
+            background: rgba(10, 14, 22, 0.85);
+        }
+
+        .actions-bar {
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+        }
+        .btn-save {
+            background: linear-gradient(135deg, #0072ff 0%, #00f0ff 100%);
+            border: none;
+            color: #06090e;
+            padding: 12px 22px;
+            border-radius: 8px;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 1.05rem;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-save:hover {
+            box-shadow: 0 4px 20px rgba(0, 240, 255, 0.4);
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #cbd5e1;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Status Toast Alert */
+        #toast-alert {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background: #111827;
+            border: 1px solid #00f0ff;
+            border-radius: 10px;
+            padding: 14px 20px;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+        #toast-alert.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        #toast-alert.success { border-color: #00e676; }
+        #toast-alert.error { border-color: #ff334b; }
+
+        .db-status-badge {
+            display: inline-block;
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        .db-status-badge.online { background: rgba(0, 230, 118, 0.2); color: #00e676; }
+        .db-status-badge.sqlite { background: rgba(0, 240, 255, 0.2); color: #00f0ff; }
+        .db-status-badge.offline { background: rgba(255, 51, 75, 0.2); color: #ff334b; }
+
+        /* User Access Control Section */
+        .user-management-card {
+            background: rgba(22, 27, 38, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 240, 255, 0.15);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+            margin-top: 35px;
+        }
+        .user-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .pending-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 170, 0, 0.15);
+            border: 1px solid rgba(255, 170, 0, 0.4);
+            border-radius: 20px;
+            padding: 5px 14px;
+            color: #ffb833;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .pulse-dot-amber {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ffb833;
+            box-shadow: 0 0 10px #ffb833;
+            animation: pulseAmber 1.5s infinite;
+        }
+        @keyframes pulseAmber {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+        .user-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+            text-align: left;
+        }
+        .user-table th {
+            padding: 12px 14px;
+            color: #8fa0dd;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(10, 14, 26, 0.4);
+        }
+        .user-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: #cbd5e1;
+        }
+        .user-table tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .status-badge.approved {
+            background: rgba(0, 230, 118, 0.15);
+            color: #00e676;
+            border: 1px solid rgba(0, 230, 118, 0.35);
+        }
+        .status-badge.pending {
+            background: rgba(255, 170, 0, 0.15);
+            color: #ffaa00;
+            border: 1px solid rgba(255, 170, 0, 0.35);
+        }
+        .status-badge.rejected {
+            background: rgba(255, 51, 75, 0.15);
+            color: #ff334b;
+            border: 1px solid rgba(255, 51, 75, 0.35);
+        }
+        .btn-action-grant {
+            background: rgba(0, 230, 118, 0.15);
+            border: 1px solid rgba(0, 230, 118, 0.4);
+            color: #00e676;
+            padding: 5px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.78rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            margin-right: 6px;
+        }
+        .btn-action-grant:hover {
+            background: #00e676;
+            color: #000000;
+            box-shadow: 0 0 10px rgba(0, 230, 118, 0.4);
+        }
+        .btn-action-revoke {
+            background: rgba(255, 170, 0, 0.15);
+            border: 1px solid rgba(255, 170, 0, 0.4);
+            color: #ffaa00;
+            padding: 5px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.78rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            margin-right: 6px;
+        }
+        .btn-action-revoke:hover {
+            background: #ffaa00;
+            color: #000000;
+            box-shadow: 0 0 10px rgba(255, 170, 0, 0.4);
+        }
+        .btn-action-delete {
+            background: rgba(255, 51, 75, 0.15);
+            border: 1px solid rgba(255, 51, 75, 0.4);
+            color: #ff334b;
+            padding: 5px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.78rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-action-delete:hover {
+            background: #ff334b;
+            color: #ffffff;
+            box-shadow: 0 0 10px rgba(255, 51, 75, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation Header -->
+    <header class="main-header">
+        <div class="logo">
+            <span class="pulse-dot"></span>
+            ITSC-SYSTEM | SMART TRAFFIC AI
+        </div>
+        <nav class="nav-links">
+            <a href="{{ url_for('dashboard.index') }}">Control Center</a>
+            <a href="{{ url_for('dashboard.reports') }}">Performance Reports</a>
+            <a href="{{ url_for('dashboard.settings') }}" class="active">System Settings</a>
+            <a href="{{ url_for('auth.logout') }}" class="btn-login-nav">Sign Out ({{ current_user or 'Operator' }})</a>
+        </nav>
+    </header>
+
+    <main class="content-container">
+        <!-- Page Title & Meta -->
+        <section class="page-intro">
+            <h2>SYSTEM CONFIGURATION CONSOLE</h2>
+            <p>Live tuning of heuristic signal bounds, road surface areas, AI vision models, and persistent storage drivers.</p>
+        </section>
+
+        <!-- Main Form Grid -->
+        <form id="settings-form" onsubmit="saveSystemSettings(event)">
+            <div class="settings-grid">
+                
+                <!-- 1. Optimization Algorithm Constraints -->
+                <div class="form-section">
+                    <div>
+                        <h3><span>⏱️</span> Signal Timing Constraints</h3>
+                        <div class="form-row">
+                            <label for="min-green">Minimum Green Phase (seconds) <span class="desc">Clamped lower bound</span></label>
+                            <input type="number" id="min-green" name="min_green" min="5" max="30" value="15" required>
+                        </div>
+                        <div class="form-row">
+                            <label for="max-green">Maximum Green Phase (seconds) <span class="desc">Clamped upper bound</span></label>
+                            <input type="number" id="max-green" name="max_green" min="30" max="180" value="60" required>
+                        </div>
+                        <div class="form-row">
+                            <label for="yellow-time">Yellow Clearance Transition (seconds) <span class="desc">Intersection safety</span></label>
+                            <input type="number" id="yellow-time" name="yellow_time" min="2" max="10" value="4" required>
+                        </div>
+                        <div class="form-row">
+                            <label for="starvation-factor">Starvation Fairness Threshold <span class="desc">Max consecutive wait phases</span></label>
+                            <input type="number" id="starvation-factor" name="starvation_cycles" min="1" max="10" value="3" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Physical Road Geometries -->
+                <div class="form-section">
+                    <div>
+                        <h3><span>📐</span> Road Surface Geometry (m²)</h3>
+                        <div class="form-row">
+                            <label for="road1-area">Road 1 (North Branch) Area <span class="desc">Total monitored surface</span></label>
+                            <input type="number" id="road1-area" step="10" min="50" max="2000" value="350" required>
+                        </div>
+                        <div class="form-row">
+                            <label for="road2-area">Road 2 (East Branch) Area <span class="desc">Total monitored surface</span></label>
+                            <input type="number" id="road2-area" step="10" min="50" max="2000" value="320" required>
+                        </div>
+                        <div class="form-row">
+                            <label for="road3-area">Road 3 (South Branch) Area <span class="desc">Total monitored surface</span></label>
+                            <input type="number" id="road3-area" step="10" min="50" max="2000" value="350" required>
+                        </div>
+                        <div class="form-row">
+                            <label for="road4-area">Road 4 (West Branch) Area <span class="desc">Total monitored surface</span></label>
+                            <input type="number" id="road4-area" step="10" min="50" max="2000" value="300" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. AI Vision & Computer Vision Models -->
+                <div class="form-section">
+                    <div>
+                        <h3><span>🤖</span> Computer Vision Engine</h3>
+                        <div class="form-row">
+                            <label for="vehicle-model">Core Vehicle Model (YOLOv8) <span class="desc">Pre-warmed weights</span></label>
+                            <select id="vehicle-model">
+                                <option value="yolov8n.pt" selected>yolov8n.pt (Nano - Real-time Inference)</option>
+                                <option value="yolov8s.pt">yolov8s.pt (Small - High Precision)</option>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <label for="emergency-model">Emergency Vehicle Model <span class="desc">Custom classifier</span></label>
+                            <select id="emergency-model">
+                                <option value="ambulance_best.pt" selected>ambulance_best.pt (Custom Ambulance Classifier)</option>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <label for="confidence-threshold">Confidence Threshold <span class="desc">Box filtering cutoff</span></label>
+                            <input type="number" id="confidence-threshold" value="0.25" min="0.10" max="0.90" step="0.05">
+                        </div>
+                        <div class="form-row">
+                            <label>Tracking Algorithm</label>
+                            <input type="text" value="ByteTrack (Persistent Object Associations)" disabled style="opacity: 0.7;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Database & Persistence Connection -->
+                <div class="form-section">
+                    <div>
+                        <h3><span>🗄️</span> Database Engine</h3>
+                        <div style="margin-bottom: 15px; font-size: 0.85rem; color: #8fa0dd; display: flex; align-items: center; justify-content: space-between;">
+                            <span>Active Storage:</span>
+                            <span id="db-status-chip" class="db-status-badge sqlite">SQLite Built-in Engine</span>
+                        </div>
+                        <div class="form-row">
+                            <label for="db-host">Database Host</label>
+                            <input type="text" id="db-host" value="localhost">
+                        </div>
+                        <div class="form-row">
+                            <label for="db-user">Database User</label>
+                            <input type="text" id="db-user" value="root">
+                        </div>
+                        <div class="form-row">
+                            <label for="db-password">Password</label>
+                            <input type="password" id="db-password" placeholder="••••••••">
+                        </div>
+                        <div class="form-row">
+                            <label for="db-name">Schema Name</label>
+                            <input type="text" id="db-name" value="traffic_signal_db">
+                        </div>
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <button type="button" class="btn-secondary" style="width: 100%;" onclick="testDatabaseConnection()">🔌 Test MySQL Connection</button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Global Action Bar -->
+            <div class="actions-bar" style="margin-top: 30px; justify-content: flex-end;">
+                <button type="button" class="btn-secondary" onclick="resetToDefaults()">↺ Reset to Defaults</button>
+                <button type="submit" class="btn-save">💾 Save & Apply Live Configuration</button>
+            </div>
+        </form>
+
+        <!-- User Access Management & Dashboard Approval Panel -->
+        <section class="user-management-section">
+            <div class="user-management-card">
+                <div class="user-header">
+                    <div>
+                        <h3 style="margin: 0; font-family: 'Rajdhani', sans-serif; font-size: 1.45rem; color: #00f0ff; letter-spacing: 1px; display: flex; align-items: center; gap: 8px;">
+                            <span>👥</span> OPERATOR & USER ACCESS CONTROL (DASHBOARD APPROVAL SYSTEM)
+                        </h3>
+                        <p style="margin: 6px 0 0; font-size: 0.85rem; color: #8fa0dd;">
+                            Only users who have been granted access through the dashboard by an administrator are permitted to log in.
+                        </p>
+                    </div>
+                    <div id="pending-users-pill" class="pending-pill" style="display: none;">
+                        <span class="pulse-dot-amber"></span>
+                        <span id="pending-count-text">0 Pending Approvals</span>
+                    </div>
+                </div>
+
+                <div style="overflow-x: auto; margin-top: 20px;">
+                    <table class="user-table" id="users-table">
+                        <thead>
+                            <tr>
+                                <th>OPERATOR USERNAME</th>
+                                <th>FULL NAME / DISPLAY</th>
+                                <th>OFFICIAL EMAIL</th>
+                                <th>ROLE</th>
+                                <th>DATE REGISTERED</th>
+                                <th>ACCESS STATUS</th>
+                                <th style="text-align: right;">ADMIN ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-tbody">
+                            <tr>
+                                <td colspan="7" style="text-align: center; color: #64748b; padding: 25px;">
+                                    Loading operator directory...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Floating Toast Notification -->
+    <div id="toast-alert">
+        <span id="toast-icon">ℹ️</span>
+        <span id="toast-text">Configuration updated.</span>
+    </div>
+
+    <footer class="main-footer" style="margin-top: 50px; text-align: center; color: #64748b; padding: 20px 0;">
+        <p>© 2026 AI-Based Smart Traffic Signal Optimization | B.E. Computer Engineering Major Project</p>
+    </footer>
+
+    <!-- Settings Logic Script -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchSystemSettings();
+            fetchUserDirectory();
+        });
+
+        function showToast(message, type = "info") {
+            const toast = document.getElementById("toast-alert");
+            const text = document.getElementById("toast-text");
+            const icon = document.getElementById("toast-icon");
+
+            text.textContent = message;
+            toast.className = `show ${type}`;
+
+            if (type === "success") icon.textContent = "✅";
+            else if (type === "error") icon.textContent = "❌";
+            else icon.textContent = "ℹ️";
+
+            setTimeout(() => {
+                toast.classList.remove("show");
+            }, 3500);
+        }
+
+        async function fetchSystemSettings() {
+            try {
+                const res = await fetch("/api/settings", { cache: "no-store" });
+                if (!res.ok) return;
+
+                const json = await res.json();
+                if (!json.success || !json.settings) return;
+
+                const s = json.settings;
+
+                // Timing
+                document.getElementById("min-green").value = s.min_green || 15;
+                document.getElementById("max-green").value = s.max_green || 60;
+                document.getElementById("yellow-time").value = s.yellow_time || 4;
+                document.getElementById("starvation-factor").value = s.starvation_cycles || 3;
+
+                // Road Areas
+                if (s.road_areas) {
+                    document.getElementById("road1-area").value = s.road_areas.road1 || 350;
+                    document.getElementById("road2-area").value = s.road_areas.road2 || 320;
+                    document.getElementById("road3-area").value = s.road_areas.road3 || 350;
+                    document.getElementById("road4-area").value = s.road_areas.road4 || 300;
+                }
+
+                // Database
+                if (s.database) {
+                    document.getElementById("db-host").value = s.database.host || "localhost";
+                    document.getElementById("db-user").value = s.database.user || "root";
+                    document.getElementById("db-name").value = s.database.name || "traffic_signal_db";
+
+                    const chip = document.getElementById("db-status-chip");
+                    if (chip) {
+                        chip.textContent = s.database.status;
+                        chip.className = s.database.status.includes("MySQL") ? "db-status-badge online" : "db-status-badge sqlite";
+                    }
+                }
+            } catch (err) {
+                console.error("[SETTINGS] Error loading configuration:", err);
+            }
+        }
+
+        async function saveSystemSettings(e) {
+            e.preventDefault();
+
+            const payload = {
+                min_green: parseInt(document.getElementById("min-green").value),
+                max_green: parseInt(document.getElementById("max-green").value),
+                yellow_time: parseInt(document.getElementById("yellow-time").value),
+                starvation_cycles: parseInt(document.getElementById("starvation-factor").value),
+                road_areas: {
+                    road1: parseFloat(document.getElementById("road1-area").value),
+                    road2: parseFloat(document.getElementById("road2-area").value),
+                    road3: parseFloat(document.getElementById("road3-area").value),
+                    road4: parseFloat(document.getElementById("road4-area").value)
+                },
+                db_host: document.getElementById("db-host").value,
+                db_user: document.getElementById("db-user").value,
+                db_password: document.getElementById("db-password").value,
+                db_name: document.getElementById("db-name").value
+            };
+
+            try {
+                const res = await fetch("/api/settings/update", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                const json = await res.json();
+                if (json.success) {
+                    showToast("Settings saved and applied to live signal controller!", "success");
+                } else {
+                    showToast(json.error || "Failed to update settings.", "error");
+                }
+            } catch (err) {
+                showToast("Network error while updating settings.", "error");
+            }
+        }
+
+        async function testDatabaseConnection() {
+            showToast("Testing database connectivity...", "info");
+            try {
+                const res = await fetch("/api/settings/test_db", { method: "POST" });
+                const json = await res.json();
+                const chip = document.getElementById("db-status-chip");
+
+                if (json.success) {
+                    if (chip) {
+                        chip.textContent = "MySQL Connected";
+                        chip.className = "db-status-badge online";
+                    }
+                    showToast(json.message, "success");
+                } else {
+                    if (chip) {
+                        chip.textContent = "SQLite Local Engine Active";
+                        chip.className = "db-status-badge sqlite";
+                    }
+                    showToast(json.message, "info");
+                }
+            } catch (err) {
+                showToast("Database test request failed.", "error");
+            }
+        }
+
+        async function resetToDefaults() {
+            if (!confirm("Reset all signal timing and road geometry parameters to standard defaults?")) return;
+
+            try {
+                const res = await fetch("/api/settings/reset", { method: "POST" });
+                const json = await res.json();
+                if (json.success) {
+                    fetchSystemSettings();
+                    showToast("Restored default standard specifications.", "success");
+                }
+            } catch (err) {
+                showToast("Failed to reset settings.", "error");
+            }
+        }
+
+        async function fetchUserDirectory() {
+            try {
+                const res = await fetch("/api/users", { cache: "no-store" });
+                const json = await res.json();
+                if (!json.success) return;
+
+                const users = json.users || [];
+                const tbody = document.getElementById("users-tbody");
+                const pill = document.getElementById("pending-users-pill");
+                const countText = document.getElementById("pending-count-text");
+
+                if (json.pending_count > 0) {
+                    if (pill) pill.style.display = "inline-flex";
+                    if (countText) countText.textContent = `${json.pending_count} Pending Approval${json.pending_count > 1 ? 's' : ''}`;
+                } else {
+                    if (pill) pill.style.display = "none";
+                }
+
+                if (!tbody) return;
+                if (users.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #64748b; padding: 25px;">No users registered yet.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = users.map(u => {
+                    const status = String(u.status || 'PENDING').toUpperCase();
+                    const statusClass = status.toLowerCase();
+                    const isMasterAdmin = u.username === 'admin';
+
+                    let actionsHtml = '';
+                    if (status === 'PENDING') {
+                        actionsHtml = `
+                            <button type="button" class="btn-action-grant" onclick="setUserStatus(${u.id}, '${u.username}', 'APPROVED')">✓ Grant Access</button>
+                            <button type="button" class="btn-action-delete" onclick="setUserStatus(${u.id}, '${u.username}', 'REJECTED')">✗ Reject</button>
+                        `;
+                    } else if (status === 'APPROVED') {
+                        if (!isMasterAdmin) {
+                            actionsHtml = `
+                                <button type="button" class="btn-action-revoke" onclick="setUserStatus(${u.id}, '${u.username}', 'REJECTED')">Revoke Access</button>
+                                <button type="button" class="btn-action-delete" onclick="removeUser(${u.id}, '${u.username}')">🗑 Delete</button>
+                            `;
+                        } else {
+                            actionsHtml = `<span style="font-size: 0.75rem; color: #64748b; font-style: italic;">Primary Master Admin</span>`;
+                        }
+                    } else { // REJECTED
+                        actionsHtml = `
+                            <button type="button" class="btn-action-grant" onclick="setUserStatus(${u.id}, '${u.username}', 'APPROVED')">✓ Grant Access</button>
+                            <button type="button" class="btn-action-delete" onclick="removeUser(${u.id}, '${u.username}')">🗑 Delete</button>
+                        `;
+                    }
+
+                    return `
+                        <tr>
+                            <td><strong style="color: #ffffff;">${u.username}</strong></td>
+                            <td>${u.full_name || '--'}</td>
+                            <td>${u.email || '--'}</td>
+                            <td><span style="font-size: 0.75rem; background: rgba(255,255,255,0.06); padding: 2px 7px; border-radius: 4px; text-transform: uppercase;">${u.role || 'operator'}</span></td>
+                            <td style="font-size: 0.8rem; color: #94a3b8;">${u.created_at || '--'}</td>
+                            <td><span class="status-badge ${statusClass}">${status}</span></td>
+                            <td style="text-align: right;">${actionsHtml}</td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (err) {
+                console.error("Error loading user directory:", err);
+            }
+        }
+
+        async function setUserStatus(userId, username, newStatus) {
+            const verb = newStatus === 'APPROVED' ? 'grant access to' : 'revoke access for';
+            if (!confirm(`Are you sure you want to ${verb} user '${username}'?`)) return;
+
+            try {
+                const res = await fetch(`/api/users/${userId}/status`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                const json = await res.json();
+                if (json.success) {
+                    showToast(json.message, "success");
+                    fetchUserDirectory();
+                } else {
+                    showToast(json.error || "Failed to update user access status.", "error");
+                }
+            } catch (err) {
+                showToast("Network error while updating user access.", "error");
+            }
+        }
+
+        async function removeUser(userId, username) {
+            if (!confirm(`Permanently delete operator account '${username}'? This cannot be undone.`)) return;
+
+            try {
+                const res = await fetch(`/api/users/${userId}`, { method: "DELETE" });
+                const json = await res.json();
+                if (json.success) {
+                    showToast(json.message, "success");
+                    fetchUserDirectory();
+                } else {
+                    showToast(json.error || "Failed to delete user.", "error");
+                }
+            } catch (err) {
+                showToast("Network error while deleting user.", "error");
+            }
+        }
+    </script>
+</body>
+</html>

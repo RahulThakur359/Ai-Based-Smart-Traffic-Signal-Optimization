@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operator Registration - AI Traffic Control Center</title>
+    <!-- Google Fonts: Inter and Rajdhani -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: radial-gradient(circle at center, #1b2438 0%, #090c13 100%);
+            margin: 0;
+            padding: 20px 0;
+            font-family: 'Inter', sans-serif;
+            color: #ffffff;
+            box-sizing: border-box;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 460px;
+            padding: 35px 40px;
+            background: rgba(18, 24, 38, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 16px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 35px rgba(0, 240, 255, 0.08);
+            text-align: center;
+            animation: fadeIn 0.7s ease-out;
+            box-sizing: border-box;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .auth-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: #00f0ff;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .auth-logo {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #00f0ff 0%, #0072ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 4px;
+        }
+
+        .auth-subtitle {
+            font-size: 0.85rem;
+            color: #8fa0dd;
+            margin-bottom: 22px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Access Notice Box */
+        .access-notice {
+            background: rgba(255, 170, 0, 0.1);
+            border: 1px solid rgba(255, 170, 0, 0.35);
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-size: 0.8rem;
+            color: #ffcc66;
+            text-align: left;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            line-height: 1.4;
+        }
+
+        .access-notice span.icon {
+            font-size: 1.1rem;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .alert-box {
+            background: rgba(255, 51, 75, 0.15);
+            border: 1px solid rgba(255, 51, 75, 0.4);
+            border-radius: 8px;
+            padding: 12px 15px;
+            color: #ff6b7d;
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+            text-align: left;
+            line-height: 1.4;
+        }
+
+        .form-row {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+
+        .form-row label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #a4b3e6;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-row input {
+            width: 100%;
+            padding: 11px 14px;
+            background: rgba(10, 14, 26, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.92rem;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        .form-row input:focus {
+            outline: none;
+            border-color: #00f0ff;
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.25);
+            background: rgba(10, 14, 26, 0.9);
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #0072ff 0%, #00f0ff 100%);
+            border: none;
+            border-radius: 8px;
+            color: #ffffff;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 114, 255, 0.4);
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            text-transform: uppercase;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 240, 255, 0.5);
+            background: linear-gradient(135deg, #00a2ff 0%, #00f0ff 100%);
+        }
+
+        .auth-btn:active {
+            transform: translateY(0);
+        }
+
+        .switch-link {
+            margin-top: 22px;
+            font-size: 0.85rem;
+            color: #8fa0dd;
+        }
+
+        .switch-link a {
+            color: #00f0ff;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .switch-link a:hover {
+            text-decoration: underline;
+            color: #5ce1e6;
+        }
+
+        .footer-text {
+            margin-top: 25px;
+            font-size: 0.75rem;
+            color: #5d6b8b;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-badge">
+            <span style="font-size: 0.9rem;">🛡️</span> Access Control
+        </div>
+        <div class="auth-logo">ITSC-SYSTEM</div>
+        <div class="auth-subtitle">Operator Access Registration</div>
+
+        <!-- Approval Warning Banner -->
+        <div class="access-notice">
+            <span class="icon">⚠️</span>
+            <div>
+                <strong>Approval Required:</strong> After registration, your account will remain <em>PENDING</em> until an administrator grants you access from the system dashboard.
+            </div>
+        </div>
+
+        {% if error %}
+        <div class="alert-box">
+            <strong>Registration Error:</strong> {{ error }}
+        </div>
+        {% endif %}
+
+        <form action="{{ url_for('auth.signup') }}" method="POST">
+            <div class="form-row">
+                <label for="full_name">Full Name / Display Name</label>
+                <input type="text" id="full_name" name="full_name" placeholder="e.g. Traffic Engineer Alex" required autocomplete="name">
+            </div>
+
+            <div class="form-row">
+                <label for="username">Operator Username</label>
+                <input type="text" id="username" name="username" placeholder="Choose unique operator ID" required autocomplete="username">
+            </div>
+
+            <div class="form-row">
+                <label for="email">Official Email</label>
+                <input type="email" id="email" name="email" placeholder="operator@traffic.control" required autocomplete="email">
+            </div>
+
+            <div class="form-row">
+                <label for="password">Security Password</label>
+                <input type="password" id="password" name="password" placeholder="At least 6 characters" required minlength="6" autocomplete="new-password">
+            </div>
+
+            <div class="form-row">
+                <label for="confirm_password">Confirm Password</label>
+                <input type="password" id="confirm_password" name="confirm_password" placeholder="Re-enter password" required minlength="6" autocomplete="new-password">
+            </div>
+
+            <button type="submit" class="auth-btn">Submit Access Request</button>
+        </form>
+
+        <div class="switch-link">
+            Already have an approved account? <a href="{{ url_for('auth.login') }}">Authorize Connection</a>
+        </div>
+
+        <div class="footer-text">
+            B.E. Computer Engineering Major Project
+        </div>
+    </div>
+</body>
+</html>

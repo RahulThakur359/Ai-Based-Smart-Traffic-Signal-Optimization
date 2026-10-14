@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Based Smart Traffic Signal Optimization - B.E. Major Project</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=3.0">
+    <!-- Chart.js for real traffic visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- Top Navigation Header -->
+    <header class="main-header">
+        <div class="logo">
+            <span class="pulse-dot"></span>
+            ITSC-SYSTEM | SMART TRAFFIC AI
+        </div>
+        <nav class="nav-links">
+            <a href="{{ url_for('dashboard.index') }}" class="active">Control Center</a>
+            <a href="{{ url_for('dashboard.reports') }}">Performance Reports</a>
+            <a href="{{ url_for('dashboard.settings') }}">System Settings</a>
+            <a href="{{ url_for('auth.logout') }}" class="btn-login-nav">Sign Out ({{ current_user or 'Operator' }})</a>
+        </nav>
+    </header>
+
+    <main class="content-container">
+        <!-- System Status Bar -->
+        <section class="system-status-bar">
+            <div class="status-indicator">
+                <span class="status-label">Engine:</span>
+                <span class="status-val online">YOLOv8n + ByteTrack</span>
+            </div>
+            <div class="status-indicator">
+                <span class="status-label">Active Junction Phase:</span>
+                <span id="active-phase-indicator" class="status-val online">INITIALIZING</span>
+            </div>
+            <div class="status-indicator">
+                <span class="status-label">Optimization Policy:</span>
+                <span class="status-val">AREA-DENSITY & STARVATION FAIRNESS</span>
+            </div>
+            <div class="status-indicator">
+                <span class="status-label">Emergency Module:</span>
+                <span class="status-val" style="color: #ffaa00;">NOT CONFIGURED</span>
+            </div>
+        </section>
+
+        <!-- Emergency Alert Banner -->
+        <section id="emergency-alert-banner" class="emergency-banner cleared">
+            <div class="banner-icon">ℹ️</div>
+            <div class="banner-message" id="banner-text">EMERGENCY DETECTION: Unconfigured (No custom ambulance weights loaded; feature safely bypassed).</div>
+        </section>
+
+        <!-- 4-Road Camera Dashboard Grid -->
+        <section class="cameras-grid">
+            
+            <!-- ROAD 1 PANEL -->
+            <div class="road-card" id="card-road1">
+                <div class="road-header">
+                    <h3>ROAD 1 (NORTH BRANCH)</h3>
+                    <span id="road1-status-badge" class="road-status-badge idle">IDLE</span>
+                </div>
+                
+                <!-- Video Stream Preview -->
+                <div class="video-preview-wrapper">
+                    <video id="road1-video" class="road-video-player" controls muted playsinline></video>
+                    <canvas id="road1-canvas" class="road-video-canvas"></canvas>
+                    <div id="road1-upload-overlay" class="upload-overlay">
+                        <label for="road1-input" class="upload-trigger">
+                            <span class="upload-icon">📹</span>
+                            <span class="upload-text">Upload Road 1 Video</span>
+                        </label>
+                        <input type="file" id="road1-input" class="video-file-input" accept=".mp4,.avi,.mov,.mkv" onchange="uploadRoadVideo('road1')">
+                    </div>
+                    <div class="upload-progress-container" id="road1-progress-container">
+                        <div class="progress-bar" id="road1-progress-bar"></div>
+                    </div>
+                </div>
+
+                <!-- Parameters Analytics -->
+                <div class="road-stats">
+                    <div class="stat-row stat-triple">
+                        <div class="stat-third">
+                            <span>Current in ROI</span>
+                            <strong id="road1-active" class="active-val">--</strong>
+                        </div>
+                        <div class="stat-divider"></div>
+                        <div class="stat-third">
+                            <span>Line Crossed</span>
+                            <strong id="road1-crossed" class="crossed-val">--</strong>
+                        </div>
+                        <div class="stat-divider"></div>
+                        <div class="stat-third">
+                            <span>Total Unique</span>
+                            <strong id="road1-vehicles">--</strong>
+                        </div>
+                    </div>
+                    <div class="stat-row">
+                        <span>Traffic Density</span>
+                        <strong id="road1-density">--</strong>
+                        <span id="road1-density-detail" class="sub-metric">Area: -- m² / 350 m² (--%)</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Congestion Status</span>
+                        <strong id="road1-congestion">--</strong>
+                        <span id="road1-congestion-detail" class="sub-metric">Queue flow analysis</span>
+                    </div>
+                    <div class="stat-row" style="grid-column: span 2;">
+                        <span>Emergency Vehicle</span>
+                        <strong id="road1-emergency" class="emg-unconfigured">NOT CONFIGURED</strong>
+                    </div>
+                </div>
+
+                <!-- Phase Decision Callout -->
+                <div class="decision-reason-box">
+                    <span class="reason-label">Controller Decision Reason</span>
+                    <span id="road1-reason" class="reason-text">Waiting for traffic data...</span>
+                </div>
+
+                <!-- Traffic Light & Timer -->
+                <div class="road-footer">
+                    <div class="signal-housing">
+                        <div class="light red" id="road1-light-red"></div>
+                        <div class="light yellow" id="road1-light-yellow"></div>
+                        <div class="light green" id="road1-light-green"></div>
+                    </div>
+                    <div class="signal-timer-box">
+                        <span class="timer-label">REMAINING TIME</span>
+                        <span class="timer-countdown" id="road1-timer">--</span>
+                        <span class="timer-unit">SEC</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROAD 2 PANEL -->
+            <div class="road-card" id="card-road2">
+                <div class="road-header">
+                    <h3>ROAD 2 (EAST BRANCH)</h3>
+                    <span id="road2-status-badge" class="road-status-badge idle">IDLE</span>
+                </div>
+                
+                <!-- Video Stream Preview -->
+                <div class="video-preview-wrapper">
+                    <video id="road2-video" class="road-video-player" controls muted playsinline></video>
+                    <canvas id="road2-canvas" class="road-video-canvas"></canvas>
+                    <div id="road2-upload-overlay" class="upload-overlay">
+                        <label for="road2-input" class="upload-trigger">
+                            <span class="upload-icon">📹</span>
+                            <span class="upload-text">Upload Road 2 Video</span>
+                        </label>
+                        <input type="file" id="road2-input" class="video-file-input" accept=".mp4,.avi,.mov,.mkv" onchange="uploadRoadVideo('road2')">
+                    </div>
+                    <div class="upload-progress-container" id="road2-progress-container">
+                        <div class="progress-bar" id="road2-progress-bar"></div>
+                    </div>
+                </div>
+
+                <!-- Parameters Analytics -->
+                <div class="road-stats">
+                    <div class="stat-row stat-triple">
+                        <div class="stat-third">
+                            <span>Current in ROI</span>
+                            <strong id="road2-active" class="active-val">--</strong>
+                        </div>
+                        <div class="stat-divider"></div>
+                        <div class="stat-third">
+                            <span>Line Crossed</span>
+                            <strong id="road2-crossed" class="crossed-val">--</strong>
+                        </div>
+                        <div class="stat-divider"></div>
+                        <div class="stat-third">
+                            <span>Total Unique</span>
+                            <strong id="road2-vehicles">--</strong>
+                        </div>
+                    </div>
+                    <div class="stat-row">
+                        <span>Traffic Density</span>
+                        <strong id="road2-density">--</strong>
+                        <span id="road2-density-detail" class="sub-metric">Area: -- m² / 320 m² (--%)</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Congestion Status</span>
+                        <strong id="road2-congestion">--</strong>
+                        <span id="road2-congestion-detail" class="sub-metric">Queue flow analysis</span>
+                    </div>
+                    <div class="stat-row" style="grid-column: span 2;">
+                        <span>Emergency Vehicle</span>
+                        <strong id="road2-emergency" class="emg-unconfigured">NOT CONFIGURED</strong>
+                    </div>
+                </div>
+
+                <!-- Phase Decision Callout -->
+                <div class="decision-reason-box">
+                    <span class="reason-label">Controller Decision Reason</span>
+                    <span id="road2-reason" class="reason-text">Waiting for traffic data...</span>
+                </div>
+
+                <!-- Traffic Light & Timer -->
+                <div class="road-footer">
+                    <div class="signal-housing">
+                        <div class="light red" id="road2-light-red"></div>
+                        <div class="light yellow" id="road2-light-yellow"></div>
+                        <div class="light green" id="road2-light-green"></div>
+                    </div>
+                    <div class="signal-timer-box">
+                        <span class="timer-label">REMAINING TIME</span>
+                        <span class="timer-countdown" id="road2-timer">--</span>
+                        <span class="timer-unit">SEC</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROAD 3 PANEL -->
+            <div class="road-card" id="card-road3">
+                <div class="road-header">
+                    <h3>ROAD 3 (SOUTH BRANCH)</h3>
+                    <span id="road3-status-badge" class="road-status-badge idle">IDLE</span>
+                </div>
+                
+                <!-- Video Stream Preview -->
+                <div class="video-preview-wrapper">
+                    <video id="road3-video" class="road-video-player" controls muted playsinline></video>
+                    <canvas id="road3-canvas" class="road-video-canvas"></canvas>
+                    <div id="road3-upload-overlay" class="upload-overlay">
+                        <label for="road3-input" class="upload-trigger">
+                            <span class="upload-icon">📹</span>
+                            <span class="upload-text">Upload Road 3 Video</span>
+                        </label>
+                        <input type="file" id="road3-input" class="video-file-input" accept=".mp4,.avi,.mov,.mkv" onchange="uploadRoadVideo('road3')">
+                    </div>
+                    <div class="upload-progress-container" id="road3-progress-container">
+                        <div class="progress-bar" id="road3-progress-bar"></div>
+                    </div>
+                </div>
+
+                <!-- Parameters Analytics -->
+                <div class="road-stats">
+                    <div class="stat-row stat-triple">
+                        <div class="stat-third">
+                            <span>Current in ROI</span>
+                            <strong id="road3-active" class="active-val">--</strong>
+                        </div>
+                        <div class="stat-divider"></div>
+                        <div class="stat-third">
+                            <span>Line Crossed</span>
+                            <strong id="road3-crossed" class="crossed-val">--</strong>
+                        </div>
+                        <div class="stat-divider"></div>
+                        <div class="stat-third">
+                            <span>Total Unique</span>
+                            <strong id="road3-vehicles">--</strong>
+                        </div>
+                    </div>
+                    <div class="stat-row">
+                        <span>Traffic Density</span>
+                        <strong id="road3-density">--</strong>
+                        <span id="road3-density-detail" class="sub-metric">Area: -- m² / 350 m² (--%)</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Congestion Status</span>
+                        <strong id="road3-congestion">--</strong>
+                        <span id="road3-congestion-detail" class="sub-metric">Queue flow analysis</span>
+                    </div>
+                    <div class="stat-row" style="grid-column: span 2;">
+                        <span>Emergency Vehicle</span>
+                        <strong id="road3-emergency" class="emg-unconfigured">NOT CONFIGURED</strong>
+                    </div>
+                </div>
+
+                <!-- Phase Decision Callout -->
+                <div class="decision-reason-box">
+                    <span class="reason-label">Controller Decision Reason</span>
+                    <span id="road3-reason" class="reason-text">Waiting for traffic data...</span>
+                </div>
+
+                <!-- Traffic Light & Timer -->
+                <div class="road-footer">
+                    <div class="signal-housing">
+                        <div class="light red" id="road3-light-red"></div>
+                        <div class="light yellow" id="road3-light-yellow"></div>
+                        <div class="light green" id="road3-light-green"></div>
+                    </div>
+                    <div class="signal-timer-box">
+                        <span class="timer-label">REMAINING TIME</span>
+                        <span class="timer-countdown" id="road3-timer">--</span>
+                        <span class="timer-unit">SEC</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROAD 4 PANEL -->
+            <div class="road-card" id="card-road4">
+                <div class="road-header">
+                    <h3>ROAD 4 (WEST BRANCH)</h3>
+                    <span id="road4-status-badge" class="road-status-badge idle">IDLE</span>
+                </div>
+                
+                <!-- Video Stream Preview -->
+                <div class="video-preview-wrapper">
+                    <video id="road4-video" class="road-video-player" controls muted playsinline></video>
+                    <canvas id="road4-canvas" class="road-video-canvas"></canvas>
+                    <div id="road4-upload-overlay" class="upload-overlay">
+                        <label for="road4-input" class="upload-trigger">
+                            <span class="upload-icon">📹</span>
+                            <span class="upload-text">Upload Road 4 Video</span>
+                        </label>
+                        <input type="file" id="road4-input" class="video-file-input" accept=".mp4,.avi,.mov,.mkv" onchange="uploadRoadVideo('road4')">
+                    </div>
+                    <div class="upload-progress-container" id="road4-progress-container">
+                        <div class="progress-bar" id="road4-progress-bar"></div>
+                    </div>
+                </div>
+
+                <!-- Parameters Analytics -->
+                <div class="road-stats">
+                    <div class="stat-row stat-triple">
+                        <div class="stat-third">
+                            <span>Current in ROI</span>
+                            <strong id="road4-active" class="active-val">--</strong>
+                        </div>
+                        <div class="stat-divider"></div>
+                        <div class="stat-third">
+                            <span>Line Crossed</span>
+                            <strong id="road4-crossed" class="crossed-val">--</strong>
+                        </div>
+                        <div class="stat-divider"></div>
+                        <div class="stat-third">
+                            <span>Total Unique</span>
+                            <strong id="road4-vehicles">--</strong>
+                        </div>
+                    </div>
+                    <div class="stat-row">
+                        <span>Traffic Density</span>
+                        <strong id="road4-density">--</strong>
+                        <span id="road4-density-detail" class="sub-metric">Area: -- m² / 300 m² (--%)</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Congestion Status</span>
+                        <strong id="road4-congestion">--</strong>
+                        <span id="road4-congestion-detail" class="sub-metric">Queue flow analysis</span>
+                    </div>
+                    <div class="stat-row" style="grid-column: span 2;">
+                        <span>Emergency Vehicle</span>
+                        <strong id="road4-emergency" class="emg-unconfigured">NOT CONFIGURED</strong>
+                    </div>
+                </div>
+
+                <!-- Phase Decision Callout -->
+                <div class="decision-reason-box">
+                    <span class="reason-label">Controller Decision Reason</span>
+                    <span id="road4-reason" class="reason-text">Waiting for traffic data...</span>
+                </div>
+
+                <!-- Traffic Light & Timer -->
+                <div class="road-footer">
+                    <div class="signal-housing">
+                        <div class="light red" id="road4-light-red"></div>
+                        <div class="light yellow" id="road4-light-yellow"></div>
+                        <div class="light green" id="road4-light-green"></div>
+                    </div>
+                    <div class="signal-timer-box">
+                        <span class="timer-label">REMAINING TIME</span>
+                        <span class="timer-countdown" id="road4-timer">--</span>
+                        <span class="timer-unit">SEC</span>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Intersection Summary and Live Chart -->
+        <section class="dashboard-bottom-grid">
+            <!-- Real-time Event Logger -->
+            <div class="activity-card">
+                <h3>REAL-TIME SYSTEM EVENTS LOG</h3>
+                <div class="activity-log" id="system-logs-container">
+                    <div class="log-item">[SYSTEM] AI Traffic Signal Engine active. Listening for road feeds...</div>
+                </div>
+            </div>
+
+            <!-- Live Multi-Branch Traffic Comparison Chart -->
+            <div class="activity-card">
+                <h3>INTERSECTION TRAFFIC LOAD COMPARISON</h3>
+                <div class="chart-container-dashboard">
+                    <canvas id="dashboardChart"></canvas>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <p>© 2026 AI-Based Smart Traffic Signal Optimization | B.E. Computer Engineering Major Project</p>
+    </footer>
+
+    <!-- Core Scripts -->
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}?v=3.0"></script>
+</body>
+</html>

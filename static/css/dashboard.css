@@ -1,0 +1,565 @@
+/* Dashboard Grid Layout & Components Styling */
+
+/* System Stats Bar */
+.system-status-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    background: rgba(22, 28, 43, 0.4);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    padding: 12px 20px;
+    margin-bottom: 20px;
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+}
+
+.status-label {
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.status-val {
+    font-family: var(--font-cyber);
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.status-val.online {
+    color: #00e676;
+    text-shadow: 0 0 5px rgba(0, 230, 118, 0.3);
+}
+
+/* Emergency Alert Banner */
+.emergency-banner {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    font-family: var(--font-cyber);
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.emergency-banner.cleared {
+    background: rgba(0, 162, 255, 0.05);
+    border: 1px solid rgba(0, 162, 255, 0.15);
+    color: var(--cyan);
+}
+
+.emergency-banner.triggered {
+    background: rgba(255, 51, 75, 0.15);
+    border: 1px solid rgba(255, 51, 75, 0.4);
+    color: #ff334b;
+    animation: flashAlert 1.5s infinite;
+}
+
+@keyframes flashAlert {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 51, 75, 0.2); }
+    50% { box-shadow: 0 0 15px 2px rgba(255, 51, 75, 0.4); }
+}
+
+/* Cameras 4-Panel Grid */
+.cameras-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+/* Road Cards */
+.road-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    transition: transform 0.3s, border-color 0.3s;
+}
+
+.road-card:hover {
+    border-color: var(--border-hover);
+}
+
+.road-card.active-lane {
+    border-color: var(--cyan);
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.1);
+}
+
+.road-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.road-header h3 {
+    font-family: var(--font-cyber);
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.road-mode-badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-muted);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Video Player Area */
+.video-preview-wrapper {
+    position: relative;
+    aspect-ratio: 16/9;
+    background: #06090e;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.road-video-player {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none; /* Hidden by default until video is uploaded */
+}
+
+.road-video-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 2;
+    display: none;
+}
+
+/* Upload Interface Overlay */
+.upload-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: rgba(10, 13, 22, 0.6);
+    backdrop-filter: blur(2px);
+    transition: all 0.3s;
+}
+
+.upload-trigger {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    gap: 8px;
+    padding: 20px;
+    border-radius: 8px;
+    border: 2px dashed rgba(255, 255, 255, 0.12);
+    transition: all 0.3s;
+    width: 80%;
+    text-align: center;
+}
+
+.upload-trigger:hover {
+    border-color: var(--cyan);
+    background: rgba(0, 240, 255, 0.03);
+}
+
+.upload-icon {
+    font-size: 1.8rem;
+}
+
+.upload-text {
+    font-family: var(--font-cyber);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.video-file-input {
+    display: none;
+}
+
+/* Upload Progress Bar */
+.upload-progress-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    display: none;
+}
+
+.progress-bar {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary) 0%, var(--cyan) 100%);
+    transition: width 0.1s ease;
+}
+
+/* Statistics Parameters Rows */
+.road-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.stat-row {
+    background: rgba(10, 13, 22, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    border-radius: 6px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.stat-row.stat-split {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 10px;
+}
+
+.stat-half {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+}
+
+.stat-half span {
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: 0.3px;
+}
+
+.stat-half strong {
+    font-family: var(--font-cyber);
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.stat-half strong.active-val {
+    color: var(--cyan);
+    text-shadow: 0 0 6px rgba(0, 240, 255, 0.25);
+}
+
+.stat-divider {
+    width: 1px;
+    height: 28px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.stat-row span {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+}
+
+.stat-row strong {
+    font-family: var(--font-cyber);
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+
+.stat-row strong.emg-alert {
+    color: #ff334b;
+    text-shadow: 0 0 5px rgba(255, 51, 75, 0.2);
+}
+
+.stat-row strong.emg-normal {
+    color: #00e676;
+}
+
+/* Traffic Lights Housing */
+.road-footer {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 15px;
+    align-items: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 12px;
+}
+
+.signal-housing {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    background: #11141e;
+    border: 2px solid #2a2e3b;
+    border-radius: 20px;
+    padding: 6px 12px;
+    width: fit-content;
+}
+
+.light {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background-color: #242835;
+    transition: all 0.3s ease;
+}
+
+/* Lights Active Glows */
+.light.red.active {
+    background-color: var(--light-red-active);
+    box-shadow: 0 0 15px 3px var(--light-red-active);
+}
+
+.light.yellow.active {
+    background-color: var(--light-yellow-active);
+    box-shadow: 0 0 15px 3px var(--light-yellow-active);
+}
+
+.light.green.active {
+    background-color: var(--light-green-active);
+    box-shadow: 0 0 15px 3px var(--light-green-active);
+}
+
+/* Countdown Clock */
+.signal-timer-box {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.timer-label {
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+}
+
+.timer-countdown {
+    font-family: var(--font-cyber);
+    font-size: 2.2rem;
+    font-weight: 700;
+    line-height: 1;
+    color: #ffffff;
+}
+
+.timer-unit {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+}
+
+/* Under Grid console activities */
+.dashboard-bottom-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 25px;
+}
+
+@media (max-width: 768px) {
+    .dashboard-bottom-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.activity-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.activity-card h3 {
+    font-family: var(--font-cyber);
+    font-size: 1.1rem;
+    color: #ffffff;
+    margin-bottom: 15px;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 8px;
+}
+
+/* Event scrolling logger console */
+.activity-log {
+    height: 160px;
+    overflow-y: auto;
+    background: #06090e;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 6px;
+    padding: 10px 15px;
+    font-family: monospace;
+    font-size: 0.8rem;
+    color: #a4b3e6;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.log-item {
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.02);
+    padding-bottom: 4px;
+}
+
+.chart-container-dashboard {
+    height: 180px;
+    width: 100%;
+}
+
+/* New Road Status Badge */
+.road-status-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-muted);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.road-status-badge.idle {
+    background: rgba(140, 150, 180, 0.1);
+    color: #8fa0dd;
+    border-color: rgba(140, 150, 180, 0.2);
+}
+
+.road-status-badge.processing {
+    background: rgba(255, 170, 0, 0.15);
+    color: #ffaa00;
+    border-color: rgba(255, 170, 0, 0.4);
+    animation: pulseBadge 1.5s infinite;
+}
+
+.road-status-badge.completed {
+    background: rgba(0, 230, 118, 0.15);
+    color: #00e676;
+    border-color: rgba(0, 230, 118, 0.4);
+}
+
+.road-status-badge.error {
+    background: rgba(255, 51, 75, 0.15);
+    color: #ff334b;
+    border-color: rgba(255, 51, 75, 0.4);
+}
+
+@keyframes pulseBadge {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Sub-metrics and Details */
+.sub-metric {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+    font-family: monospace;
+}
+
+/* Emergency Unconfigured */
+.stat-row strong.emg-unconfigured {
+    color: #ffaa00;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+/* Phase Decision Rationale Box */
+.decision-reason-box {
+    background: rgba(10, 13, 22, 0.6);
+    border: 1px solid rgba(0, 240, 255, 0.12);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.75rem;
+    color: #c0d0f0;
+    line-height: 1.35;
+    min-height: 38px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.decision-reason-box .reason-label {
+    font-weight: 700;
+    color: var(--cyan);
+    text-transform: uppercase;
+    font-size: 0.68rem;
+    margin-bottom: 2px;
+    letter-spacing: 0.5px;
+}
+
+.decision-reason-box .reason-text {
+    color: #e0e8ff;
+    font-style: normal;
+}
+
+/* Triple-split statistics row */
+.stat-row.stat-triple {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 8px 10px;
+    grid-column: span 2;
+}
+
+.stat-third {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+}
+
+.stat-third span {
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.stat-third strong {
+    font-family: var(--font-cyber);
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.stat-third strong.active-val {
+    color: var(--cyan);
+    text-shadow: 0 0 6px rgba(0, 240, 255, 0.25);
+}
+
+.stat-third strong.crossed-val {
+    color: #00e676;
+    text-shadow: 0 0 6px rgba(0, 230, 118, 0.25);
+}
